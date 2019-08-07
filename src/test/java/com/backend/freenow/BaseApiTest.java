@@ -15,6 +15,14 @@ import io.restassured.response.Response;
 
 public class BaseApiTest {
 	
+	@SuppressWarnings("deprecation")
+	public BaseApiTest() {
+		RestAssured.config = RestAssuredConfig.config()
+		        .httpClient(HttpClientConfig.httpClientConfig()
+		                .setParam(CoreConnectionPNames.CONNECTION_TIMEOUT, 10000)
+		                .setParam(CoreConnectionPNames.SO_TIMEOUT, 10000));
+	}
+	
 	Response httpresponse;
 	
 	protected final static Logger LOGGER =  
