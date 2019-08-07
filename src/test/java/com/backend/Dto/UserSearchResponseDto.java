@@ -3,7 +3,7 @@ package com.backend.Dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserSearchResponse {
+public class UserSearchResponseDto {
 	
 	int id;
 	String name;
