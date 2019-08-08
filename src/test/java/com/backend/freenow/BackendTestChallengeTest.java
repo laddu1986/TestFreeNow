@@ -16,7 +16,7 @@ import com.backend.Dto.UserSearchResponseDto;
 
 import io.restassured.RestAssured;
 
-public class BackendTestChallenge extends BaseApiTest {
+public class BackendTestChallengeTest extends BaseApiTest {
 
 	private static String USERNAME = "Samantha";
 	private UserSearchResponseDto user;
