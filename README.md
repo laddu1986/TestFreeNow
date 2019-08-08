@@ -12,4 +12,9 @@ freenow backend test
 ## Build in circleCI was getting failed due to surefire-plugin issue. Added a workaround in pom.xml.
 
 
+#CircleCI Link : https://circleci.com/gh/bansalnitin92/freenow
+
+#GitHub Link: https://github.com/bansalnitin92/freenow
+
+
 
