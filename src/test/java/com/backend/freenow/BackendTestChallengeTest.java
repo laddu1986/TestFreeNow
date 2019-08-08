@@ -13,6 +13,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.testng.collections.CollectionUtils;
 
+import com.backend.constants.DataConstants;
 import com.backend.dto.PostCommentResponseDto;
 import com.backend.dto.UserPostResponseDto;
 import com.backend.dto.UserSearchResponseDto;
@@ -20,18 +21,16 @@ import com.backend.dto.UserSearchResponseDto;
 import io.restassured.RestAssured;
 
 public class BackendTestChallengeTest extends BaseApiTest {
-
-	private static String USERNAME = "Samantha";
-	private UserSearchResponseDto user;
-	private List<UserPostResponseDto> postList;
-	Map<String, String> param;
-	String URI;
-	String PARAM_USER_ID = "userId";
-	String PARAM_POST_ID = "postId";
+	
+	private  UserSearchResponseDto user;
+	private  List<UserPostResponseDto> postList;
+	private  Map<String, String> param;
+	
+	public static String URI;
 
 	@BeforeClass
 	public void setUp() {
-		RestAssured.baseURI = "https://jsonplaceholder.typicode.com/";
+		RestAssured.baseURI = DataConstants.BASE_URI;
 	}
 
 	// Find the specified user in all users.
@@ -41,14 +40,14 @@ public class BackendTestChallengeTest extends BaseApiTest {
 		List<UserSearchResponseDto> userList = this.requestGET(URI, null, UserSearchResponseDto.class);
 		try {
 			if (userList != null) {
-				user = userList.stream().filter(k -> k.getUsername().equals(USERNAME)).findFirst().get();
-				LOGGER.info(String.format("Username %s has ID %d", USERNAME, user.getId()));
+				user = userList.stream().filter(k -> k.getUsername().equals(DataConstants.USERNAME)).findFirst().get();
+				LOGGER.info(String.format("Username %s has ID %d",DataConstants.USERNAME, user.getId()));
 			}
 			else {
 				LOGGER.info(String.format("User List received is empty"));
 			}
 		} catch (NoSuchElementException e) {
-			LOGGER.info(String.format("Username %s is not present in Http response", USERNAME));
+			LOGGER.info(String.format("Username %s is not present in Http response", DataConstants.USERNAME));
 		}
 	}
 
@@ -63,16 +62,16 @@ public class BackendTestChallengeTest extends BaseApiTest {
 		param = new HashMap<String, String>();
 
 		if (user != null) {
-			param.put(PARAM_USER_ID, String.valueOf(user.getId()));
+			param.put(DataConstants.PARAM_USER_ID, String.valueOf(user.getId()));
 
 			postList = this.requestGET(URI, param, UserPostResponseDto.class);
 			if (postList != null && CollectionUtils.hasElements(postList)) {
-				LOGGER.info(String.format("Username %s has posts %d", USERNAME, postList.size()));
+				LOGGER.info(String.format("Username %s has posts %d", DataConstants.USERNAME, postList.size()));
 			} else {
-				LOGGER.warning(String.format("Username %s doesn't have any posts", USERNAME));
+				LOGGER.warning(String.format("Username %s doesn't have any posts", DataConstants.USERNAME));
 			}
 		}else {
-			LOGGER.info(String.format("Username %s is not present in Http response", USERNAME));
+			LOGGER.info(String.format("Username %s is not present in Http response", DataConstants.USERNAME));
 		}
 	}
 
@@ -86,7 +85,7 @@ public class BackendTestChallengeTest extends BaseApiTest {
 		param = new HashMap<String, String>();
 		if (postList != null) {
 			postList.forEach(k -> {
-				param.put(PARAM_POST_ID, String.valueOf(k.getId()));
+				param.put(DataConstants.PARAM_POST_ID, String.valueOf(k.getId()));
 				List<PostCommentResponseDto> commentList = this.requestGET(URI, param, PostCommentResponseDto.class);
 
 				if (commentList != null && CollectionUtils.hasElements(commentList)) {
@@ -100,13 +99,13 @@ public class BackendTestChallengeTest extends BaseApiTest {
 				}
 			});
 		}else {
-			LOGGER.warning(String.format("Username %s doesn't have any posts", USERNAME));
+			LOGGER.warning(String.format("Username %s doesn't have any posts", DataConstants.USERNAME));
 		}
 	}
 
 	// validate email using RegEx.
 	protected void validateEmailPattern(List<String> email) {
-		Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$",
+		Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile(DataConstants.EMAIL_REGEX,
 				Pattern.CASE_INSENSITIVE);
 		if (email != null) {
 			email.forEach(k -> {

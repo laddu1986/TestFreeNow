@@ -1,14 +1,14 @@
 package com.backend.freenow;
 
+
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.http.params.CoreConnectionPNames;
-import org.testng.Assert;
 import org.testng.SkipException;
+
+import com.backend.constants.DataConstants;
 
 import io.restassured.RestAssured;
 import io.restassured.config.HttpClientConfig;
@@ -38,7 +38,7 @@ public class BaseApiTest {
 		validateHttpResponse(httpresponse.statusCode(), httpresponse.getContentType());
 
 		JsonPath path = httpresponse.getBody().jsonPath();
-		List<T> responseDto = path.getList("$", clazz);
+		List<T> responseDto = path.getList(DataConstants.ROOT_JSON, clazz);
 		return responseDto;
 	}
 
