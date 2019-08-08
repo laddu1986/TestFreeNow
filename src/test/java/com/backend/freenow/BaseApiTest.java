@@ -42,6 +42,7 @@ public class BaseApiTest {
 		return responseDto;
 	}
 
+	//Skipping test case in case of negative status code 
 	private void validateHttpResponse(int statusCode, String contentType) {
 		SkipException exception = new SkipException("Skipping Test...");
 		if (statusCode == 400 || statusCode == 404) {
@@ -58,13 +59,14 @@ public class BaseApiTest {
 		}
 	}
 
+	//validate email using RegEx.
 	protected void validateEmailPattern(List<String> email) {
 		Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$",
 				Pattern.CASE_INSENSITIVE);
 
 		email.forEach(k -> {
 			Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(k);
-			Assert.assertTrue(matcher.find());
+			Assert.assertTrue(matcher.find(),"Email syntax is not valid");
 		});
 	}
 
