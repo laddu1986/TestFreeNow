@@ -54,20 +54,10 @@ public class BaseApiTest {
 		} else if ((statusCode == 200 || statusCode == 201) && contentType.contains("json")) {
 			LOGGER.info("everything went well. Cheers!!");
 		} else {
-			LOGGER.warning("Application seems to be down at this moment");
+			LOGGER.warning("Application seems to be DOWN at this moment");
 			throw exception;
 		}
 	}
 
-	//validate email using RegEx.
-	protected void validateEmailPattern(List<String> email) {
-		Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$",
-				Pattern.CASE_INSENSITIVE);
-
-		email.forEach(k -> {
-			Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(k);
-			Assert.assertTrue(matcher.find(),"Email syntax is not valid");
-		});
-	}
 
 }

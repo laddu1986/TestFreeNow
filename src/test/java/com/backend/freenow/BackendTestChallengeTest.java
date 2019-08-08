@@ -4,15 +4,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.testng.collections.CollectionUtils;
 
-import com.backend.Dto.PostCommentResponseDto;
-import com.backend.Dto.UserPostResponseDto;
-import com.backend.Dto.UserSearchResponseDto;
+import com.backend.dto.PostCommentResponseDto;
+import com.backend.dto.UserPostResponseDto;
+import com.backend.dto.UserSearchResponseDto;
 
 import io.restassured.RestAssured;
 
@@ -35,14 +38,18 @@ public class BackendTestChallengeTest extends BaseApiTest {
 	@Test(priority = 1)
 	public void searchTheUser() {
 		URI = "users";
-		List<UserSearchResponseDto> userList = requestGET(URI, null, UserSearchResponseDto.class);
-
+		List<UserSearchResponseDto> userList = this.requestGET(URI, null, UserSearchResponseDto.class);
 		try {
-			user = userList.stream().filter(k -> k.getUsername().equals(USERNAME)).findFirst().get();
+			if (userList != null) {
+				user = userList.stream().filter(k -> k.getUsername().equals(USERNAME)).findFirst().get();
+				LOGGER.info(String.format("Username %s has ID %d", USERNAME, user.getId()));
+			}
+			else {
+				LOGGER.info(String.format("User List received is empty"));
+			}
 		} catch (NoSuchElementException e) {
 			LOGGER.info(String.format("Username %s is not present in Http response", USERNAME));
 		}
-		LOGGER.info(String.format("Username %s has ID %d", USERNAME, user.getId()));
 	}
 
 	// Find posts written by specified user. calling SearchTheUser() method again to
@@ -51,16 +58,21 @@ public class BackendTestChallengeTest extends BaseApiTest {
 	// these are dependent on above.
 	@Test(priority = 2)
 	public void searchPosts() {
-		searchTheUser();
+		this.searchTheUser();
 		URI = "posts";
 		param = new HashMap<String, String>();
-		param.put(PARAM_USER_ID, String.valueOf(user.getId()));
 
-		postList = requestGET(URI, param, UserPostResponseDto.class);
-		if (postList != null && CollectionUtils.hasElements(postList)) {
-			LOGGER.info(String.format("Username %s has posts %d", USERNAME, postList.size()));
-		} else {
-			LOGGER.warning(String.format("Username %s doesn't have any posts", USERNAME));
+		if (user != null) {
+			param.put(PARAM_USER_ID, String.valueOf(user.getId()));
+
+			postList = this.requestGET(URI, param, UserPostResponseDto.class);
+			if (postList != null && CollectionUtils.hasElements(postList)) {
+				LOGGER.info(String.format("Username %s has posts %d", USERNAME, postList.size()));
+			} else {
+				LOGGER.warning(String.format("Username %s doesn't have any posts", USERNAME));
+			}
+		}else {
+			LOGGER.info(String.format("Username %s is not present in Http response", USERNAME));
 		}
 	}
 
@@ -72,23 +84,38 @@ public class BackendTestChallengeTest extends BaseApiTest {
 		searchPosts();
 		URI = "comments";
 		param = new HashMap<String, String>();
-		postList.forEach(k -> {
+		if (postList != null) {
+			postList.forEach(k -> {
+				param.put(PARAM_POST_ID, String.valueOf(k.getId()));
+				List<PostCommentResponseDto> commentList = this.requestGET(URI, param, PostCommentResponseDto.class);
 
-			param.put(PARAM_POST_ID, String.valueOf(k.getId()));
-			List<PostCommentResponseDto> commentList = requestGET(URI, param, PostCommentResponseDto.class);
+				if (commentList != null && CollectionUtils.hasElements(commentList)) {
+					List<String> emailList = commentList.stream().map(PostCommentResponseDto::getEmail)
+							.collect(Collectors.toList());
+					this.validateEmailPattern(emailList);
+					LOGGER.info(String.format("PostID %s with comments size %d has valid emails", k.getId(),
+							commentList.size()));
+				} else {
+					LOGGER.warning(String.format("PostID %s doesn't have any comments", k.getId()));
+				}
+			});
+		}else {
+			LOGGER.warning(String.format("Username %s doesn't have any posts", USERNAME));
+		}
+	}
 
-			if (commentList != null && CollectionUtils.hasElements(commentList)) {
-				List<String> emailList = commentList.stream().map(PostCommentResponseDto::getEmail)
-						.collect(Collectors.toList());
-				validateEmailPattern(emailList);
-				LOGGER.info(String.format("PostID %s with comments size %d has valid emails", k.getId(),
-						commentList.size()));
-			} else {
-				LOGGER.warning(String.format("PostID %s doesn't have any comments", k.getId()));
-			}
-
-		});
-
+	// validate email using RegEx.
+	protected void validateEmailPattern(List<String> email) {
+		Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$",
+				Pattern.CASE_INSENSITIVE);
+		if (email != null) {
+			email.forEach(k -> {
+				Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(k);
+				Assert.assertTrue(matcher.find(), "Email syntax is not valid");
+			});
+		}else {
+			LOGGER.info("Email List received is empty");
+		}
 	}
 
 }
